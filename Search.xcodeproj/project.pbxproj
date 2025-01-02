@@ -14,9 +14,22 @@
 		8DDD59BC2D240F110074F08B /* Search.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Search.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		8DFB19CE2D26FC970054CCE2 /* Exceptions for "Search" folder in "Search" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 8DDD59BB2D240F110074F08B /* Search */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		8DDD59BE2D240F110074F08B /* Search */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8DFB19CE2D26FC970054CCE2 /* Exceptions for "Search" folder in "Search" target */,
+			);
 			path = Search;
 			sourceTree = "<group>";
 		};
@@ -264,6 +277,7 @@
 				DEVELOPMENT_TEAM = LPYRM2DB72;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Search/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = " Search";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Secure Private Mode";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -296,6 +310,7 @@
 				DEVELOPMENT_TEAM = LPYRM2DB72;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Search/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = " Search";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Secure Private Mode";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
