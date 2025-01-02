@@ -1,5 +1,6 @@
 import SwiftUI
 import WebKit
+import HapticEase
 
 struct SearchView: View {
     @State private var searchText: String = ""
@@ -19,15 +20,61 @@ struct SearchView: View {
             VStack {
                 // Header
                 HStack {
-                    Image(systemName: "magnifyingglass")
-                        .symbolEffect(.bounce.up.byLayer, options: .repeat(.periodic(delay: 3.0)))
+                    if #available(iOS 18.0, *) {
+                        Image(systemName: "magnifyingglass")
+                            .symbolEffect(.bounce.up.byLayer, options: .repeat(.periodic(delay: 3.0)))
+                    } else {
+                        Image(systemName: "magnifyingglass")
+                    }
                     Text("Search")
                 }
                 .font(.title)
                 .bold()
                 
                 // Search Field
-                searchField
+                VStack {
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .onTapGesture {
+                                HapticFeedback()
+                                    .selection()
+                                privateMode = true
+                            }
+                        
+                        TextField("Search \(searchEngine)", text: $searchText, onEditingChanged: { editingChanged in
+                            focussed = editingChanged // Update 'focussed' state
+                        }, onCommit: {
+                            focussed = false
+                            performSearch()
+                        })
+                        .focused($closeKeyboard)
+                        .textFieldStyle(PlainTextFieldStyle())
+                        
+                        Image(systemName: "clock")
+                            .onTapGesture {
+                                HapticFeedback()
+                                    .selection()
+                                historySheet = true
+                            }
+                        Image(systemName: "eyes")
+                            .onTapGesture {
+                                HapticFeedback()
+                                    .pulsePattern()
+                                privateMode = true
+                            }
+                    }
+                }
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 25)
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(.gray.opacity(0.25), lineWidth: 5)
+                                .blur(radius: 5)
+                        )
+                )
+                    .padding()
                 
                 // WebView or Search Results
                 if searchFinished, !searchText.isEmpty, !focussed { // Using 'focussed' state
@@ -45,41 +92,7 @@ struct SearchView: View {
         }
     }
     
-    // MARK: - Search Field
-    private var searchField: some View {
-        VStack {
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .onTapGesture {
-                        privateMode = true
-                    }
-                
-                TextField("Search \(searchEngine)", text: $searchText, onEditingChanged: { editingChanged in
-                    focussed = editingChanged // Update 'focussed' state
-                }, onCommit: {
-                    focussed = false
-                    performSearch()
-                })
-                .focused($closeKeyboard)
-                .textFieldStyle(PlainTextFieldStyle())
-                
-                Image(systemName: "clock")
-                    .onTapGesture {
-                        historySheet = true
-                    }
-            }
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 25)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 25)
-                        .stroke(.gray.opacity(0.25), lineWidth: 5)
-                        .blur(radius: 5)
-                )
-        )
-    }
+    
     
     // MARK: - Search WebView
     private var searchWebView: some View {
@@ -142,6 +155,8 @@ struct SearchView: View {
     // MARK: - Perform Search
     private func performSearch() {
         searchFinished = true
+        HapticFeedback()
+            .heartbeatPattern()
         addHistoryItem()
     }
     

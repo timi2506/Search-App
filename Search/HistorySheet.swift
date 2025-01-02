@@ -1,4 +1,5 @@
 import SwiftUI
+import HapticEase
 
 struct HistorySheet: View {
     @ObservedObject private var historyManager = HistoryManager.shared
@@ -58,6 +59,8 @@ struct HistorySheet: View {
                 
                 // Clear History Button
                 Button(action: {
+                    HapticFeedback()
+                            .success()
                     historyManager.clearHistory()
                 }) {
                     Text("Clear History")

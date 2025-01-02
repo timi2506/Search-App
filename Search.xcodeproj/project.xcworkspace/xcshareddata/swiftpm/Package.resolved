@@ -1,0 +1,15 @@
+{
+  "originHash" : "ac65dd7abae2a8eed6368419c8483071d535582e26a5a74886d4feab7317ce02",
+  "pins" : [
+    {
+      "identity" : "hapticease",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/emreeilhan/HapticEase.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "cf211d93c70f5cbc67a081c4592f718f663eedfd"
+      }
+    }
+  ],
+  "version" : 3
+}

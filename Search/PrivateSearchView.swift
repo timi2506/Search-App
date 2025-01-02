@@ -1,6 +1,7 @@
 import SwiftUI
 import WebKit
 import LocalAuthentication
+import HapticEase
 
 struct PrivateSearchView: View {
     @State private var searchText = ""
@@ -14,10 +15,9 @@ struct PrivateSearchView: View {
     @State var showDisableAnim = false
     @State var showEnableAnim = false
     @State private var isUnlocked = false
-
+    @State private var biometricsWarning = false
+    
     var body: some View {
-        
-
         if !isUnlocked {
             VStack {
                 Image(systemName: "lock.fill")
@@ -31,24 +31,32 @@ struct PrivateSearchView: View {
                     .font(.headline)
                 Spacer()
                 Button("Unlock", systemImage: "lock.open.fill") {
+                    HapticFeedback()
+                        .selection()
                     authenticate()
                 }
-                    .padding()
-                    .foregroundStyle(.white)
-                    .background(
-                        RoundedRectangle(cornerRadius: 100)
-                            .fill(.blue)
-                    )
+                .padding()
+                .foregroundStyle(.white)
+                .background(
+                    RoundedRectangle(cornerRadius: 100)
+                        .fill(.blue)
+                )
             }
             .onAppear(perform: authenticate)
-
+            
         }
         else {
             ZStack {
                 VStack {
+                    
                     HStack {
-                        Image(systemName: "eyes")
-                            .symbolEffect(.bounce.up.byLayer, options: .repeat(.periodic(delay: 3.0)))
+                        if #available(iOS 18.0, *) {
+                            Image(systemName: "eyes")
+                                .symbolEffect(.bounce.up.byLayer, options: .repeat(.periodic(delay: 3.0)))
+                        }
+                        else {
+                            Image(systemName: "eyes")
+                        }
                         Text("Private Search")
                         
                     }
@@ -58,6 +66,8 @@ struct PrivateSearchView: View {
                         HStack {
                             Image(systemName: "eyes.inverse")
                                 .onTapGesture {
+                                    HapticFeedback()
+                                        .selection()
                                     privateMode = false
                                 }
                             TextField("Search \(searchEngine) in Private", text: $searchText, onEditingChanged: { (editingChanged) in
@@ -74,8 +84,12 @@ struct PrivateSearchView: View {
                             .textFieldStyle(PlainTextFieldStyle())
                             Image(systemName: "lock.fill")
                                 .onTapGesture {
-                                    isUnlocked = false
+                                    HapticFeedback()
+                                        .pulsePattern()
                                     privateMode = false
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.01, execute: {
+                                        isUnlocked = false
+                                    })
                                 }
                         }
                     }
@@ -89,7 +103,19 @@ struct PrivateSearchView: View {
                                     .blur(radius: 5)
                             )
                         
+                        
                     )
+                    .padding()
+
+                    if biometricsWarning {
+                        HStack {
+                            Image("exclamationmark.triangle.fill")
+                                .font(.caption)
+                            Text("WARNING: FaceID or TouchID are disabled, Private Mode is unprotected")
+                                .font(.caption)
+                        }
+                        .foregroundStyle(.red)
+                    }
                     if searchFinished {
                         if searchText != "" {
                             if !focussed {
@@ -151,12 +177,13 @@ struct PrivateSearchView: View {
                                     )
                                     .cornerRadius(15)
                                 }
+                                .ignoresSafeArea(.all)
                                 
                             }
                         }
                     }
                 }
-                .onChange(of: focussed) { oldValue, newValue in
+                .onChange(of: focussed) { newValue in
                     if focussed {
                         searchFinished = false
                     }
@@ -164,28 +191,48 @@ struct PrivateSearchView: View {
             }
             
         }
-
+        
     }
     
     func authenticate() {
         let context = LAContext()
         var error: NSError?
-
-        // check whether biometric authentication is possible
+        
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
-            // it's possible, so go ahead and use it
-            let reason = "We need to unlock your data."
-
+            let reason = "Please authenticate to access the Private Mode"
+            
             context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, authenticationError in
-                // authentication has now completed
-                if success {
-                    isUnlocked = true
-                } else {
-                    isUnlocked = false
+                DispatchQueue.main.async {
+                    if success {
+                        isUnlocked = true
+                        HapticFeedback()
+                            .success()
+                    } else {
+                        isUnlocked = false
+                        HapticFeedback()
+                            .error()
+                    }
+                }
+            }
+        } else if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+            let reason = "Please authenticate to access the Private Mode"
+            
+            context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, authenticationError in
+                DispatchQueue.main.async {
+                    if success {
+                        isUnlocked = true
+                        HapticFeedback()
+                            .success()
+                    } else {
+                        isUnlocked = false
+                        HapticFeedback()
+                            .error()
+                    }
                 }
             }
         } else {
-            // no biometrics
+            isUnlocked = true
+            biometricsWarning = true
         }
     }
 }
